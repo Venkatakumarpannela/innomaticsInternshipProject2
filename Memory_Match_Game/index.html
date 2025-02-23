@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Match Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .card {
+            width: 100px;
+            height: 100px;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+        .hidden {
+            background-color: #bbb;
+            color: transparent;
+        }
+        .controls {
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 600px) {
+            .game-container {
+                grid-template-columns: repeat(4, 70px);
+                gap: 5px;
+            }
+            .card {
+                width: 70px;
+                height: 70px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Memory Match Game</h1>
+    <p>Time Left: <span id="timer">30</span> seconds</p>
+    <div class="game-container" id="gameBoard"></div>
+    <div class="controls">
+        <button onclick="startGame()">Reset Game</button>
+    </div>
+    <script>
+        const fruits = ["🍎", "🍌", "🍇", "🍉", "🍍", "🥭", "🍒", "🍑"];
+        let gameBoard = document.getElementById("gameBoard");
+        let timerElement = document.getElementById("timer");
+        let firstCard = null;
+        let secondCard = null;
+        let lockBoard = false;
+        let timeLeft = 30;
+        let timer;
+        
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+        
+        function createBoard() {
+            let fruitPairs = shuffle([...fruits, ...fruits]);
+            gameBoard.innerHTML = "";
+            fruitPairs.forEach(fruit => {
+                let card = document.createElement("div");
+                card.classList.add("card", "hidden");
+                card.dataset.fruit = fruit;
+                card.innerText = fruit;
+                card.addEventListener("click", flipCard);
+                gameBoard.appendChild(card);
+            });
+        }
+        
+        function flipCard() {
+            if (lockBoard || this === firstCard) return;
+            this.classList.remove("hidden");
+            
+            if (!firstCard) {
+                firstCard = this;
+                return;
+            }
+            
+            secondCard = this;
+            checkMatch();
+        }
+        
+        function checkMatch() {
+            lockBoard = true;
+            if (firstCard.dataset.fruit === secondCard.dataset.fruit) {
+                resetCards();
+            } else {
+                setTimeout(() => {
+                    firstCard.classList.add("hidden");
+                    secondCard.classList.add("hidden");
+                    resetCards();
+                }, 500);
+            }
+        }
+        
+        function resetCards() {
+            firstCard = null;
+            secondCard = null;
+            lockBoard = false;
+        }
+        
+        function startGame() {
+            clearInterval(timer);
+            timeLeft = 30;
+            timerElement.innerText = timeLeft;
+            createBoard();
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                timerElement.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert("Time's up! Try again.");
+                    startGame();
+                }
+            }, 1000);
+        }
+        
+        startGame();
+    </script>
+</body>
+</html>
